@@ -1,7 +1,7 @@
 /*
   XSControl Library
 
-  Version   :  1.0.0
+  Version   :  1.0.1
   Autor     :  Pablo Cardenas
   Fecha     :  09/04/2024
 
