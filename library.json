@@ -1,0 +1,31 @@
+{
+    "name": "XSControl",
+    "version": "1.0.0",
+    "description": "Library used for implementing control systems",
+    "keywords": "control, filter, esp32, pid, xspace",
+    "repository":
+    {
+      "type": "git",
+      "url": "https://github.com/TheXSpacer/XSControl.git"
+    },
+    "authors":
+    [
+      {
+        "name": "The XSpace Academy",
+        "email": "p.cardenasc@xspace.pe",
+        "url": "https://xspace.pe",
+        "maintainer": true
+      }
+    ],
+    "export": {
+      "exclude":
+      [
+          "test/*"
+      ]
+    },
+    "license": "MIT",
+    "dependencies": {
+    },
+    "frameworks": ["Arduino"],
+    "platforms": ["espressif32"]
+  }
