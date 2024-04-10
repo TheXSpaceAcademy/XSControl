@@ -1,7 +1,7 @@
 /*
   XSControl Library
 
-  Version   :  1.0.1
+  Version   :  1.0.2
   Author    :  Pablo Cardenas
   Date      :  09/04/2024
 
@@ -16,12 +16,14 @@
 #include <stdint.h>
 
 #define FORWARD_EULER 1
-#define TUSTIN 2
+#define BACKWARD_EULER 2
+#define TUSTIN 3
 
 class XSController{
   private:
     double e_1 = 0; // Previous error value
     double u_1 = 0; // Previous control signal value
+    double _integral=0;
   public:
 
     /* Control System Algorithm
@@ -30,13 +32,14 @@ class XSController{
        set_point => The desired value (reference) for the system output.
        Kp => Proportional gain.
        Ki => Integral gain.
+       Kd => Derivative gain.
        Ts => Sample time of the control system in seconds.
        aprox => Method of approximation for discrete controller (FORWARD_EULER, TUSTIN).
 
        Returns:
        The control signal to be applied to the system.
     */
-    double ControlLaw(double sensed_output, double set_point, double Kp, double Ki, double Ts, int aprox);
+    double ControlLaw(double sensed_output, double set_point, double Kp, double Ki, double Kd, double Ts, int aprox);
 
 };
 
