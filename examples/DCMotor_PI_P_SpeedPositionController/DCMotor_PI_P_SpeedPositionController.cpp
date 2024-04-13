@@ -1,5 +1,5 @@
 /*
-This example demonstrates how to implement a PI Speed Controller of DC Motor.
+This example demonstrates how to implement a PI+P Speed-Position Controller of DC Motor.
 
 Author: PabloC
 Date: 09/04/2024
@@ -26,18 +26,20 @@ XSController Controller;
 
 // Constants for the motor control configuration
 #define PWM_FREQUENCY 20000 // Defines PWM frequency in Hz for motor control
-#define ENCODER_RESOLUTION 960 // Specifies the resolution of the motor encoder
+#define ENCODER_RESOLUTION 970.666 // Specifies the resolution of the motor encoder
 #define DRV8837_POWER_SUPPLY 5 // Defines the power supply voltage (in volts) for the DRV8837 motor driver
 
 // Variables for storing the raw and filtered speed measurements
+double position; // Raw speed measurement
 double speed; // Raw speed measurement
 double filtered_speed; // Speed measurement after applying the low-pass filter
+double speed_sp = 0;
 
 // Task dedicated to filtering the speed measurement from the motor's encoder
 void SpeedFilter(void *pvParameters) {
   while (true) {
     // Measure speed in degrees per second from the encoder
-    speed = XSBoard.GetEncoderSpeed(DEGREES_PER_SECOND);
+    speed = XSBoard.GetEncoderSpeed(E1,DEGREES_PER_SECOND);
     // Apply a second-order low-pass filter to the speed measurement
     filtered_speed = Filter.SecondOrderLPF(speed, 20, 0.001);
     // Delay of 1 ms between each measurement cycle
@@ -47,25 +49,42 @@ void SpeedFilter(void *pvParameters) {
   vTaskDelete(NULL);
 }
 
-// Task for controlling the motor speed
+// Task for controlling the motor position
 void SpeedController(void *pvParameters) {
   double voltage;
   // Wake up the DRV8837 motor driver
   XSBoard.DRV8837_Wake();
 
   // PID controller parameters
-  double Kp = 0.04; // Proportional gain
-  double Ki = 0.2;  // Integral gain
+  double Kp = 0.004; // Proportional gain
+  double Ki = 0.02;  // Integral gain
+  double Ts = 0.01; // Sampling time (in seconds)
+
+  while (true) {
+    // Calculate the control signal (voltage) to be applied to the motor
+    voltage = Controller.PI_ControlLaw(filtered_speed, speed_sp, Kp, Ki, FORWARD_EULER, Ts);
+    // Apply the calculated voltage to the motor
+    XSBoard.DRV8837_Voltage(voltage);
+    // Output the filtered speed to the Serial Monitor for debugging
+    Serial.println(position);
+    // Delay of 10 ms between control cycles
+    vTaskDelay(10);
+  }
+  // Task cleanup, if ever exited
+  vTaskDelete(NULL);
+}
+
+// Task for controlling the motor speed
+void PositionController(void *pvParameters) {
+  // PID controller parameters
+  double Kp = 0.8; // Proportional gain
   double Ts = 0.01; // Sampling time (in seconds)
   double SetPoint = 180; // Target speed in degrees per second
 
   while (true) {
+    position = XSBoard.GetEncoderPosition(E1,DEGREES);
     // Calculate the control signal (voltage) to be applied to the motor
-    voltage = Controller.ControlLaw(filtered_speed, SetPoint, Kp, Ki, FORWARD_EULER, Ts);
-    // Apply the calculated voltage to the motor
-    XSBoard.DRV8837_Voltage(voltage);
-    // Output the filtered speed to the Serial Monitor for debugging
-    Serial.println(filtered_speed);
+    speed_sp = (SetPoint - position)*Kp;
     // Delay of 10 ms between control cycles
     vTaskDelay(10);
   }
@@ -80,8 +99,9 @@ void setup() {
   XSBoard.init(PWM_FREQUENCY, ENCODER_RESOLUTION, DRV8837_POWER_SUPPLY);
 
   // Create Real-Time Operating System (RTOS) tasks for speed filtering and motor control
-  xTaskCreate(SpeedFilter, "FilterTask", 2000, NULL, 1, NULL);
-  xTaskCreate(SpeedController, "ControlTask", 2000, NULL, 1, NULL);
+  xTaskCreate(SpeedFilter, "FilterTask", 2000, NULL, 2, NULL);
+  xTaskCreate(SpeedController, "ControlTask", 2000, NULL, 2, NULL);
+  xTaskCreate(PositionController, "ControlTask", 2000, NULL, 2, NULL);
 }
 
 void loop() {
