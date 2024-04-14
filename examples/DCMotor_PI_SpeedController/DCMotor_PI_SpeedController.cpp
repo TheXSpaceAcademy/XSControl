@@ -1,17 +1,28 @@
 /*
-This example demonstrates how to implement a PI Speed Controller of DC Motor.
+This example demonstrates how to implement a PI Speed Controller of DC Motor
+
+                           SpeedController        DC Motor
+                            ------------         -----------     
+                            +----------+         +---------+        
+              +             |      Ki  | voltage |    b    |   speed  
+speed_ref ----->o---------->| Kp + --- |-------->|  -----  |--------->
+                ^ -         |       s  |         |  s + a  |   |    
+                |           +----------+         +---------+   |
+                |                                              |
+                |                +-------------+               |
+                +----------------| SpeedFilter |<--------------+
+                                 +-------------+
 
 Author: PabloC
-Date: 13/04/2024
+Date: 09/04/2024
 Dependencies: <XSpaceV20.h>
 
 Install the library dependencies
 - XSpaceV20
 
-To use the VSCode Serial Monitor with this project, update your platformio.ini file to include the following line:
-monitor_speed = 1000000
+Update your platformio.ini file to include the following line:
 
-This sets the baud rate to 1,000,000 bits per second, matching the configuration in the sketch.
+monitor_speed = 1000000
 */
 
 
@@ -37,7 +48,7 @@ double filtered_speed; // Speed measurement after applying the low-pass filter
 void SpeedFilter(void *pvParameters) {
   while (true) {
     // Measure speed in degrees per second from the encoder
-    speed = XSBoard.GetEncoderSpeed(DEGREES_PER_SECOND);
+    speed = XSBoard.GetEncoderSpeed(E1,DEGREES_PER_SECOND);
     // Apply a second-order low-pass filter to the speed measurement
     filtered_speed = Filter.SecondOrderLPF(speed, 20, 0.001);
     // Delay of 1 ms between each measurement cycle
@@ -57,11 +68,11 @@ void SpeedController(void *pvParameters) {
   double Kp = 0.04; // Proportional gain
   double Ki = 0.2;  // Integral gain
   double Ts = 0.01; // Sampling time (in seconds)
-  double SetPoint = 180; // Target speed in degrees per second
+  double speed_ref = 180; // Target speed in degrees per second
 
   while (true) {
     // Calculate the control signal (voltage) to be applied to the motor
-    voltage = Controller.ControlLaw(filtered_speed, SetPoint, Kp, Ki, FORWARD_EULER, Ts);
+    voltage = Controller.ControlLaw(filtered_speed, speed_ref, Kp, Ki, FORWARD_EULER, Ts);
     // Apply the calculated voltage to the motor
     XSBoard.DRV8837_Voltage(voltage);
     // Output the filtered speed to the Serial Monitor for debugging
