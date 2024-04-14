@@ -1,12 +1,7 @@
 /*
   XSControl Library
-
-  Version   :  1.0.4
   Autor     :  Pablo Cardenas
-  Fecha     :  12/04/2024
-
   This is an open source library but dont remeber to reference!
-
 */
 
 #include <XSControl.h>
@@ -19,7 +14,6 @@ double XSController::PI_ControlLaw(double sensed_output, double set_point, doubl
 	// Calculate each component separately
 	double P = Kp * e;  // Proportional component
 	double I = 0;       // Integral component, to be calculated based on the approximation method
-	double D = 0;       // Derivative component, to be calculated based on the approximation method
 
 	switch (aprox_integral) {
 		case FORWARD_EULER:
@@ -27,7 +21,7 @@ double XSController::PI_ControlLaw(double sensed_output, double set_point, doubl
 			this->_integral += this->e_1 * Ts; // Use the previous error for Forward Euler
 			I = Ki * this->_integral; // Calculate Integral component
 			break;
-		case TUSTIN:
+		case TRAPEZOIDAL:
 			// Using Tustin (trapezoidal approximation) for the Integral component
 			this->_integral += (e + this->e_1) * Ts / 2; // Average of current and previous errors
 			I = Ki * this->_integral; // Calculate Integral component using the trapezoidal rule
@@ -64,7 +58,7 @@ double XSController::PD_ControlLaw(double sensed_output, double set_point, doubl
 			// Approximate derivative using Forward Euler method
 			D = Kd * N * (e - e_1) / (1 + N * Ts);
 			break;
-		case TUSTIN:
+		case TRAPEZOIDAL:
 			// Approximate derivative using Tustin method (bilinear transform)
 			D = Kd * N * (2/Ts) * (e - e_1) / (2 + N * Ts);
 			break;
@@ -101,7 +95,7 @@ double XSController::PID_ControlLaw(double sensed_output, double set_point, doub
 			this->_integral += this->e_1 * Ts; // Use the previous error for Forward Euler
 			I = Ki * this->_integral; // Calculate Integral component
 			break;
-		case TUSTIN:
+		case TRAPEZOIDAL:
 			// Using Tustin (trapezoidal approximation) for the Integral component
 			this->_integral += (e + this->e_1) * Ts / 2; // Average of current and previous errors
 			I = Ki * this->_integral; // Calculate Integral component using the trapezoidal rule
@@ -121,7 +115,7 @@ double XSController::PID_ControlLaw(double sensed_output, double set_point, doub
 			// Approximate derivative using Forward Euler method
 			D = Kd * N * (e - e_1) / (1 + N * Ts);
 			break;
-		case TUSTIN:
+		case TRAPEZOIDAL:
 			// Approximate derivative using Tustin method (bilinear transform)
 			D = Kd * N * (2/Ts) * (e - e_1) / (2 + N * Ts);
 			break;

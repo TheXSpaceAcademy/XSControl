@@ -1,12 +1,7 @@
 /*
 	XSControl Library
-
-	Version   :  1.0.4
 	Author    :  Pablo Cardenas
-	Date      :  12/04/2024
-
 	This is an open source library. Please remember to reference it if you use it in your projects!
-
 */
 
 #ifndef XSCONTROL_H
@@ -17,7 +12,7 @@
 
 #define FORWARD_EULER 1
 #define BACKWARD_EULER 2
-#define TUSTIN 3
+#define TRAPEZOIDAL 3
 
 class XSController{
 	private:

@@ -2,7 +2,7 @@
 This example demonstrates how to implement a PI Speed Controller of DC Motor.
 
 Author: PabloC
-Date: 09/04/2024
+Date: 13/04/2024
 Dependencies: <XSpaceV20.h>
 
 Install the library dependencies
@@ -26,7 +26,7 @@ XSController Controller;
 
 // Constants for the motor control configuration
 #define PWM_FREQUENCY 20000 // Defines PWM frequency in Hz for motor control
-#define ENCODER_RESOLUTION 960 // Specifies the resolution of the motor encoder
+#define ENCODER_RESOLUTION 1280 // Specifies the resolution of the motor encoder
 #define DRV8837_POWER_SUPPLY 5 // Defines the power supply voltage (in volts) for the DRV8837 motor driver
 
 // Variables for storing the raw and filtered speed measurements

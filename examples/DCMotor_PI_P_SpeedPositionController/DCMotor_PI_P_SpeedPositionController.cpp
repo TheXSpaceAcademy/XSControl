@@ -26,7 +26,7 @@ XSController Controller;
 
 // Constants for the motor control configuration
 #define PWM_FREQUENCY 20000 // Defines PWM frequency in Hz for motor control
-#define ENCODER_RESOLUTION 970.666 // Specifies the resolution of the motor encoder
+#define ENCODER_RESOLUTION 1280 // Specifies the resolution of the motor encoder
 #define DRV8837_POWER_SUPPLY 5 // Defines the power supply voltage (in volts) for the DRV8837 motor driver
 
 // Variables for storing the raw and filtered speed measurements
@@ -62,7 +62,7 @@ void SpeedController(void *pvParameters) {
 
   while (true) {
     // Calculate the control signal (voltage) to be applied to the motor
-    voltage = Controller.PI_ControlLaw(filtered_speed, speed_sp, Kp, Ki, FORWARD_EULER, Ts);
+    voltage = Controller.PI_ControlLaw(filtered_speed, speed_sp, Kp, Ki, BACKWARD_EULER, Ts);
     // Apply the calculated voltage to the motor
     XSBoard.DRV8837_Voltage(voltage);
     // Output the filtered speed to the Serial Monitor for debugging
