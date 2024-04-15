@@ -1,6 +1,6 @@
 {
     "name": "XSControl",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "description": "Library used for implementing control systems",
     "keywords": "control, filter, esp32, pid, xspace, system control",
     "repository":

@@ -1,19 +1,20 @@
 /*
 This example demonstrates how to implement a PI+P Speed-Position Controller of DC Motor (Cascade)
 
-              PositionController         SpeedController                 DC Motor
-                   ------                 ------------         --------------------------
-                                          +----------+         +---------+        +-----+
-           +       +-----+  +   speed_ref |      Ki  | voltage |    b    | speed  |  1  |  position
-  pos_ref--->o---->| Kp2 |--->o---------->| Kp + --- |-------->|  -----  |------->| --- |--------->
-             ^ -   +-----+    ^ -         |       s  |         |  s + a  |   |    |  s  |    |
-             |                |           +----------+         +---------+   |    +-----+    |
-             |                |                                              |               |
-             |                |                +-------------+               |               |
-             |                +----------------| SpeedFilter |<--------------+               |
-             |                                 +-------------+                               |
-             |                                                                               |
-             +-------------------------------------------------------------------------------+
+                                                                                 DC Motor
+                                              SpeedController        +------------------------------+
+              PositionController                +----------+         |  +---------+        +-----+  |
+           +       +-----+  speed_ref  +        |      Ki  | voltage |  |    b    | speed  |  1  |  |   position
+ pos_ref --->o---->| Kp2 |-------------->o----->| Kp + --- |-------->|--|  -----  |------->| --- |--|-------> 
+             ^ -   +-----+               ^ -    |       s  |         |  |  s + a  |   |    |  s  |  |  |
+             |       10ms                |      +----------+         |  +---------+   |    +-----+  |  |
+             |                           |          10ms             +----------------|-------------+  |
+             |                           |                                            |                |
+             |                           |  filtered_speed  +-------------+           |                |
+             |                           +------------------| SpeedFilter |<----------+                |
+             |                                              +-------------+                            |
+             |                                                    1ms                                  |
+             +-----------------------------------------------------------------------------------------+
 
 Author: PabloC
 Date: 09/04/2024
@@ -32,7 +33,7 @@ monitor_speed = 1000000
 #include <XSpaceV20.h>
 #include <XSControl.h>
 
-// Initialization of board and filter components
+// Definition of board, filter and controller objects
 XSpaceV20Board XSBoard;
 XSFilter Filter;
 XSController Controller;
@@ -62,7 +63,30 @@ void SpeedFilter(void *pvParameters) {
   vTaskDelete(NULL);
 }
 
+
 // Task for controlling the motor position
+void PositionController(void *pvParameters) {
+  // PID controller parameters
+  double Kp2 = 2.78; // Proportional gain
+  double Ts = 0.01; // Sampling time (in seconds)
+  double pos_ref = 180; // Target position in degrees
+
+  while (true) {
+    position = XSBoard.GetEncoderPosition(E1,DEGREES);
+    // Calculate the control signal (voltage) to be applied to the motor
+    speed_ref = (pos_ref - position)*Kp2;
+
+    // Output the DC Motor position to the Serial Monitor for debugging
+    Serial.println(position);
+
+    // Delay of 10 ms between control cycles
+    vTaskDelay(10);
+  }
+  // Task cleanup, if ever exited
+  vTaskDelete(NULL);
+}
+
+// Task for controlling the motor speed
 void SpeedController(void *pvParameters) {
   double voltage;
   // Wake up the DRV8837 motor driver
@@ -78,32 +102,13 @@ void SpeedController(void *pvParameters) {
     voltage = Controller.PI_ControlLaw(filtered_speed, speed_ref, Kp, Ki, BACKWARD_EULER, Ts);
     // Apply the calculated voltage to the motor
     XSBoard.DRV8837_Voltage(voltage);
-    // Output the filtered speed to the Serial Monitor for debugging
-    Serial.println(position);
-    // Delay of 10 ms between control cycles
+    // Delay of 10 ms equal to the sampling time (Ts)
     vTaskDelay(10);
   }
   // Task cleanup, if ever exited
   vTaskDelete(NULL);
 }
 
-// Task for controlling the motor speed
-void PositionController(void *pvParameters) {
-  // PID controller parameters
-  double Kp2 = 2.78; // Proportional gain
-  double Ts = 0.01; // Sampling time (in seconds)
-  double pos_ref = 180; // Target speed in degrees per second
-
-  while (true) {
-    position = XSBoard.GetEncoderPosition(E1,DEGREES);
-    // Calculate the control signal (voltage) to be applied to the motor
-    speed_ref = (pos_ref - position)*Kp2;
-    // Delay of 10 ms between control cycles
-    vTaskDelay(10);
-  }
-  // Task cleanup, if ever exited
-  vTaskDelete(NULL);
-}
 
 void setup() {
   // Initialize serial communication at 1,000,000 baud for fast data transfer
@@ -111,7 +116,7 @@ void setup() {
   // Initialize the motor board with the specified configuration
   XSBoard.init(PWM_FREQUENCY, ENCODER_RESOLUTION, DRV8837_POWER_SUPPLY);
 
-  // Create Real-Time Operating System (RTOS) tasks for speed filtering and motor control
+  // Create Real-Time Operating System (RTOS) tasks for filtering, speed and position control
   xTaskCreate(SpeedFilter, "FilterTask", 2000, NULL, 2, NULL);
   xTaskCreate(SpeedController, "ControlTask", 2000, NULL, 2, NULL);
   xTaskCreate(PositionController, "ControlTask", 2000, NULL, 2, NULL);

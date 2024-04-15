@@ -1,115 +1,100 @@
 /*
-	XSControl Library
-	Author    :  Pablo Cardenas
-	This is an open source library. Please remember to reference it if you use it in your projects!
+    XSControl Library
+    Author: Pablo Cardenas
+    Description: An open-source library tailored for Arduino platforms, providing robust tools 
+                 for implementing PID control algorithms. It supports various methods for 
+                 integral and derivative approximation to meet diverse control needs.
+    Note: Please include a reference to this library in your projects!
 */
 
 #ifndef XSCONTROL_H
 #define XSCONTROL_H
 
 #include <Arduino.h>
-#include <stdint.h>
 
-#define FORWARD_EULER 1
-#define BACKWARD_EULER 2
-#define TRAPEZOIDAL 3
+// Defines methods for approximating the integral and derivative in control calculations
+#define FORWARD_EULER 1  // Forward difference approximation for derivatives
+#define BACKWARD_EULER 2 // Backward difference approximation for derivatives
+#define TRAPEZOIDAL 3    // Trapezoidal rule for numerical integration
 
-class XSController{
-	private:
-		double e_1 = 0; // Previous error value
-		double u_1 = 0; // Previous control signal value
-		double _integral=0;
-	public:
+class XSController {
+private:
+    double e_1 = 0;         // Previous error value in the control loop
+    double u_1 = 0;         // Previous control signal output
+    double _integral = 0;   // Accumulated integral value for integration calculations
 
-	/* Control System Algorithm
-	This function computes the control signal for a PID controller with
-	methods of approximation for both integral and derivative components.
+public:
+    /* PI Control Law
+       Computes the control signal using a Proportional-Integral control strategy.
+       @param sensed_output The current measured output of the system.
+       @param set_point The target output value for the system.
+       @param Kp Proportional gain.
+       @param Ki Integral gain.
+       @param aprox_integral Selected method for integral approximation (FORWARD_EULER, BACKWARD_EULER, TRAPEZOIDAL).
+       @param Ts Sampling time in seconds.
+       @return The computed control signal to adjust the system output towards the set point.
+    */
+    double PI_ControlLaw(double sensed_output, double set_point, double Kp, double Ki, int aprox_integral, double Ts);
 
-	Parameters:
-	sensed_output - The current sensed value of the system output.
-	set_point => The desired value (reference) for the system output.
-	Kp => Proportional gain.
-	Ki => Integral gain.
-	aprox_integral - Method of approximation for the integral component (Options: FORWARD_EULER, BACKWARD_EULER, TUSTIN)
-	Ts => Sample time of the control system in seconds.
+    /* PD Control Law
+       Computes the control signal using a Proportional-Derivative control strategy.
+       @param sensed_output The current measured output of the system.
+       @param set_point The target output value for the system.
+       @param Kp Proportional gain.
+       @param Kd Derivative gain.
+       @param aprox_derivative Selected method for derivative approximation (FORWARD_EULER, BACKWARD_EULER, TRAPEZOIDAL).
+       @param N Filter coefficient for the derivative term to smooth derivative action.
+       @param Ts Sampling time in seconds.
+       @return The computed control signal to adjust the system output towards the set point.
+    */
+    double PD_ControlLaw(double sensed_output, double set_point, double Kp, double Kd, int aprox_derivative, double N, double Ts);
 
-	Returns:
-	The control signal to be applied to the system to drive the sensed_output towards the set_point.
-	*/
-	double PI_ControlLaw(double sensed_output, double set_point, double Kp, double Ki, int aprox_integral, double Ts);
-	
-	/* Control System Algorithm
-	This function computes the control signal for a PID controller with
-	methods of approximation for both integral and derivative components.
-
-	Parameters:
-	sensed_output - The current sensed value of the system output.
-	set_point => The desired value (reference) for the system output.
-	Kp => Proportional gain.
-	Kd => Derivative gain.
-	aprox_derivative - Method of approximation for the derivative component (Options: FORWARD_EULER, BACKWARD_EULER, TUSTIN)
-	N => Filter coefficient for the derivative law.
-	Ts => Sample time of the control system in seconds.
-
-	Returns:
-	The control signal to be applied to the system to drive the sensed_output towards the set_point.
-	*/
-	double PD_ControlLaw(double sensed_output, double set_point, double Kp, double Kd, int aprox_derivative, double N, double Ts);
-
-	/* Control System Algorithm
-	This function computes the control signal for a PID controller with
-	methods of approximation for both integral and derivative components.
-
-	Parameters:
-	sensed_output - The current sensed value of the system output.
-	set_point => The desired value (reference) for the system output.
-	Kp => Proportional gain.
-	Ki => Integral gain.
-	Kd => Derivative gain.
-	aprox_integral - Method of approximation for the integral component (Options: FORWARD_EULER, BACKWARD_EULER, TUSTIN)
-	aprox_derivative - Method of approximation for the derivative component (Options: FORWARD_EULER, BACKWARD_EULER, TUSTIN)
-	N => Filter coefficient for the derivative law.
-	Ts => Sample time of the control system in seconds.
-
-	Returns:
-	The control signal to be applied to the system to drive the sensed_output towards the set_point.
-	*/
-	double PID_ControlLaw(double sensed_output, double set_point, double Kp, double Ki, int aprox_integral, double Kd, int aprox_derivative, double N, double Ts);
+    /* PID Control Law
+       Computes the control signal using a full Proportional-Integral-Derivative approach.
+       @param sensed_output The current measured output of the system.
+       @param set_point The target output value for the system.
+       @param Kp Proportional gain.
+       @param Ki Integral gain.
+       @param aprox_integral Selected method for integral approximation (FORWARD_EULER, BACKWARD_EULER, TRAPEZOIDAL).
+       @param Kd Derivative gain.
+       @param aprox_derivative Selected method for derivative approximation (FORWARD_EULER, BACKWARD_EULER, TRAPEZOIDAL).
+       @param N Filter coefficient for smoothing the derivative component.
+       @param Ts Sampling time in seconds.
+       @return The computed control signal to dynamically adjust the system output towards the set point.
+    */
+    double PID_ControlLaw(double sensed_output, double set_point, double Kp, double Ki, int aprox_integral, double Kd, int aprox_derivative, double N, double Ts);
 };
 
-class XSFilter{
+class XSFilter {
 	private:
-		// LPF 1st order
+		// Variables for first-order Low Pass Filter
 		double yk_1 = 0; // Previous output value
 		double uk_1 = 0; // Previous input value
 
-		// LPF 2nd order
-		double uk2_1 = 0; // First previous input value
-		double uk2_2 = 0; // Second previous input value
-		double yk2_1 = 0; // First previous output value
-		double yk2_2 = 0; // Second previous output value
+		// Variables for second-order Low Pass Filter
+		double uk2_1 = 0; // Input value at n-1
+		double uk2_2 = 0; // Input value at n-2
+		double yk2_1 = 0; // Output value at n-1
+		double yk2_2 = 0; // Output value at n-2
 
 	public:
-		/* First order Low Pass Filter
-			 Parameters:
-			 signal_input => The signal input to be filtered.
-			 freq => Cutoff frequency in Hertz (Hz).
-			 Ts => Sample time of the filter in seconds.
-
-			 Returns:
-			 The filtered signal as a double.
+		/* First Order Low Pass Filter
+		   Filters an input signal using a first-order low pass filter configuration.
+		   @param signal_input The input signal to be filtered.
+		   @param freq Cutoff frequency in Hertz (Hz).
+		   @param Ts Sampling interval in seconds.
+		   @return The filtered output signal as a double.
 		*/
 		double FirstOrderLPF(double signal_input, double freq, double Ts);
 
-		/* Second order Low Pass Filter
-			 Parameters:
-			 signal_input => The signal input to be filtered.
-			 freq => Cutoff frequency in Hertz (Hz).
-			 Ts => Sample time of the filter in seconds.
-
-			 Returns:
-			 The filtered signal as a double.
+		/* Second Order Low Pass Filter
+		   Filters an input signal using a second-order low pass filter configuration.
+		   @param signal_input The input signal to be filtered.
+		   @param freq Cutoff frequency in Hertz (Hz).
+		   @param Ts Sampling interval in seconds.
+		   @return The filtered output signal as a double.
 		*/
 		double SecondOrderLPF(double signal_input, double freq, double Ts);
 };
+
 #endif
