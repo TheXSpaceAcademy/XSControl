@@ -2,6 +2,11 @@
 
 This file documents all significant changes made to the XSpace V20 library.
 
+## [Version 1.0.8] - 2024-04-16
+
+### Fixed
+- The examples were corrected.
+
 ## [Version 1.0.8] - 2024-04-14
 
 ### Added

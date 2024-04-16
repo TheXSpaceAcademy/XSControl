@@ -1,28 +1,30 @@
 /*
 This example demonstrates how to implement a Proportional-Derivative (PD) Postion Controller of DC Motor
 
-                   PositionController       DC Motor    
-                     +-----------+         +---------+        
-              +      |           | voltage |    b    |   position  
-pos_ref ----->o----->| Kp + Kd*s |-------->|  -----  |--------->
-              ^ -    |           |         |  s + a  |   |    
-              |      +-----------+         +---------+   |
-              |           10ms                           |
-              |                                          |
-              +------------------------------------------+
+                   PositionController                    DC Motor  
+                                            +------------------------------+        
+                     +-----------+          |  +---------+        +-----+  |        
+              +      |           | voltage  |  |    b    | speed  |  1  |  |   position              
+pos_ref ----->o----->| Kp + Kd*s |----------|->|  -----  |------->| --- |--|------->
+              ^ -    |           |          |  |  s + a  |        |  s  |  |   |   
+              |      +-----------+          |  +---------+        +-----+  |   |
+              |           10ms              +------------------------------+   |
+              |                                                                |
+              +----------------------------------------------------------------+
 
 In Simulink, the discrete derivative is always implemented using a first-order filter (Check Discrete PID Controller block)
 The continuous version is as follows:
 
-                      PositionController            DC Motor    
-                     +------------------+         +---------+        
-              +      |              N   | voltage |    b    |   position  
-pos_ref ----->o----->| Kp + Kd*s ------ |-------->|  -----  |--------->
-              ^ -    |            s + N |         |  s + a  |    |
-              |      +------------------+         +---------+    |
-              |              10ms                                |
-              |                                                  |
-              +--------------------------------------------------+
+                     PositionController                         DC Motor  
+                                                   +------------------------------+        
+                     +-----------------+           |  +---------+        +-----+  |        
+              +      |             N   |  voltage  |  |    b    | speed  |  1  |  |   position              
+pos_ref ----->o----->| Kp + Kd*s ----- |---------->|--|  -----  |------->| --- |--|-------->
+              ^ -    |           s + N |           |  |  s + a  |        |  s  |  |   |   
+              |      +-----------------+           |  +---------+        +-----+  |   |
+              |             10ms                   +------------------------------+   |
+              |                                                                       |
+              +-----------------------------------------------------------------------+
 
 Author: PabloC
 Date: 09/04/2024
