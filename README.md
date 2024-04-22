@@ -17,7 +17,7 @@ To use `XSControl` with PlatformIO, add the following line to your `platformio.i
 
 ```ini
 lib_deps =
-  git://github.com/TheXSpaceAcademy/XSControl.git#main
+ https://github.com/TheXSpaceAcademy/XSControl.git#main
 ```
 
 ### Arduino IDE

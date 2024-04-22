@@ -6,7 +6,7 @@
 
 #include <XSControl.h>
 
-/************************XSControl***************************/
+/************************XSController***************************/
 double XSController::PI_ControlLaw(double sensed_output, double set_point, double Kp, double Ki, int aprox_integral, double Ts){
 	double u = 0; // Control signal
 	double e = set_point - sensed_output; // Current error
@@ -137,6 +137,8 @@ double XSController::PID_ControlLaw(double sensed_output, double set_point, doub
 	return u;
 }
 
+
+/************************XSFilter***************************/
 double XSFilter::FirstOrderLPF(double signal_input, double freq, double Ts){
 	double uk = signal_input;
 	double Tau = 1/(2*PI*freq);
@@ -160,7 +162,7 @@ double XSFilter::SecondOrderLPF(double signal_input, double freq, double Ts){
 	return yk2;
 }
 
-
+/************************XSData***************************/
 void XSData::SignalAnalizer(double *muestras, double *time_m, double *muestras_pro, int no_muestras, double *max, double *min, double *freq){
   double temp_max = 0;
   double temp_min = 10000000000000;

@@ -97,7 +97,8 @@ class XSFilter {
 		double SecondOrderLPF(double signal_input, double freq, double Ts);
 };
 
-class XData {
+class XSData {
+   private:
 
    public:
       void SignalAnalizer(double *muestras, double *time_m, double *muestras_pro, int no_muestras, double *max, double *min, double *freq);
