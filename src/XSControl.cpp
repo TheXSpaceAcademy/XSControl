@@ -159,3 +159,49 @@ double XSFilter::SecondOrderLPF(double signal_input, double freq, double Ts){
 
 	return yk2;
 }
+
+
+void XSData::SignalAnalizer(double *muestras, double *time_m, double *muestras_pro, int no_muestras, double *max, double *min, double *freq){
+  double temp_max = 0;
+  double temp_min = 10000000000000;
+  
+	for(int i=0; i<no_muestras; i++){
+		if(muestras[i]>temp_max)temp_max = muestras[i];
+		if(muestras[i]<temp_min)temp_min = muestras[i];
+	}
+
+	double moffset = (temp_max+temp_min)/2;
+
+	for(int i=0; i<no_muestras; i++){
+		muestras_pro[i] =  muestras[i] - moffset;
+	}
+
+  *max = temp_max-moffset;
+  *min = temp_min-moffset;
+
+  int Posiciones[50];
+  int j=0;
+  bool numx=true;
+
+  for(int i=5; i<no_muestras; i++){
+    if( (muestras_pro[i]>0) && muestras_pro[i-5]<0  && numx==true){
+      Posiciones[j] = time_m[i];
+	//muestras_pro[i]=10000;
+      j++;
+      numx=false;
+    }
+    if(muestras_pro[i]<0 && !numx) numx=true;
+  }
+
+  double SumaPeriodos = 0;
+  for(int k=j-1; k>0; k--){
+    SumaPeriodos = SumaPeriodos + (double)(Posiciones[k]-Posiciones[k-1]);
+  }
+	SumaPeriodos = SumaPeriodos/1000000;
+  
+	//muestras_pro[0]=20000;
+	//muestras_pro[no_muestras-1]=-20000;
+
+  //*freq = ((double)(j-1))/SumaPeriodos;
+
+}
