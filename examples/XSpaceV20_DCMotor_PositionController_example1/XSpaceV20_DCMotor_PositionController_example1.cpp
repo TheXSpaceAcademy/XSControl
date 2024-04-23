@@ -73,7 +73,7 @@ void PositionController(void *pvParameters) {
 
   while (true) {
     position = XSBoard.GetEncoderPosition(E1,DEGREES);
-    // Calculate the control signal (voltage) to be applied to the motor
+    // Calculate the control signal (speed_reef) to be applied to the spped control loop
     speed_ref = (pos_ref - position)*Kp2;
 
     // Output the DC Motor position to the Serial Monitor for debugging

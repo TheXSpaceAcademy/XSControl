@@ -48,7 +48,7 @@ void PositionController(void *pvParameters) {
 
   // PID controller parameters
   double Kp = 0.04; // Proportional gain
-  double Kd = 0.2;  // Integral gain
+  double Ki = 0.2;  // Integral gain
   double Ts = 0.01; // Sampling time (in seconds)
   double speed_ref = 180; // Target speed in degrees per second
 
