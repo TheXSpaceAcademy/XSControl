@@ -38,6 +38,7 @@ monitor_speed = 1000000
 // Definition of board and controller objects
 XSpaceV21Board XSBoard; // Object to interface with the XSpaceV21 hardware
 XSController Controller; // Object to manage control algorithms
+XSFilter Filter;
 
 // Constants for the motor control configuration
 #define PWM_FREQUENCY 20000 // PWM frequency in Hz for motor control
@@ -54,7 +55,7 @@ void SpeedFilter(void *pvParameters) {
     // Measure speed in degrees per second from the encoder
     speed = XSBoard.GetEncoderSpeed(E1, DEGREES_PER_SECOND);
     // Apply a second-order low-pass filter to the speed measurement
-    filtered_speed = Controller.SecondOrderLPF(speed, 20, 0.001);
+    filtered_speed = Filter.SecondOrderLPF(speed, 20, 0.001);
     // Delay for 1 ms between each measurement cycle
     vTaskDelay(1);
   }
@@ -70,7 +71,7 @@ void SpeedController(void *pvParameters) {
 
   // PID controller parameters
   double K1 = 0.04; // x1 gain
-  double K2 = 0.2;  // x2 gain
+  double K2 = -0.2;  // x2 gain
   double Ts = 0.01; // Sampling time in seconds
   double speed_ref = 180; // Desired speed in degrees per second
 
@@ -80,7 +81,7 @@ void SpeedController(void *pvParameters) {
   while (true) {
     // Calculate the control signal (voltage) to be applied to the motor
     x1 = filtered_speed;
-    x2 = Controller.Discrete_Integrator(speed_ref - filtered_speed, FORWARD_EULER, 0.001);
+    x2 = Controller.Discrete_Integrator(speed_ref - filtered_speed, FORWARD_EULER, 0.01);
     voltage = -K1 * x1 - K2 * x2;
     // Apply the calculated voltage to the motor
     XSBoard.DRV8837_Voltage(DRVx1, voltage);

@@ -24,6 +24,17 @@ private:
     double _integral = 0;   // Accumulated integral value for integration calculations
 
 public:
+   /*
+   * Discrete Integrator
+   * Computes the integral of the input signal using a discrete approximation method.
+   * 
+   * @param input The input signal to be integrated.
+   * @param aprox_integral The selected method for integral approximation (FORWARD_EULER, BACKWARD_EULER, TRAPEZOIDAL).
+   * @param Ts Sampling time in seconds.
+   * @return The computed integral of the input signal.
+   */
+    double Discrete_Integrator(double input, int aprox_integral, double Ts);
+
     /* PI Control Law
        Computes the control signal using a Proportional-Integral control strategy.
        @param sensed_output The current measured output of the system.
