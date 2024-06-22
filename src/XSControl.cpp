@@ -7,6 +7,34 @@
 #include <XSControl.h>
 
 /************************XSController***************************/
+double XSController::Discrete_Integrator(double input, int aprox_integral, double Ts){
+	double I = 0;
+
+	switch (aprox_integral) {
+		case FORWARD_EULER:
+			// Update integral with the accumulated error using Forward Euler method
+			this->_integral += this->e_1 * Ts; // Use the previous error for Forward Euler
+			I = this->_integral; // Calculate Integral component
+			break;
+		case TRAPEZOIDAL:
+			// Using Tustin (trapezoidal approximation) for the Integral component
+			this->_integral += (e + this->e_1) * Ts / 2; // Average of current and previous errors
+			I = this->_integral; // Calculate Integral component using the trapezoidal rule
+			break;
+		case BACKWARD_EULER:
+			// Update integral using Backward Euler method, which uses the current error
+			this->_integral += e * Ts; // Use the current error for Backward Euler
+			I = this->_integral; // Integral component calculated with Backward Euler
+			break;
+		default:
+			// In case of an unsupported approximation method
+			break;
+
+		return I;
+	}
+}
+
+
 double XSController::PI_ControlLaw(double sensed_output, double set_point, double Kp, double Ki, int aprox_integral, double Ts){
 	double u = 0; // Control signal
 	double e = set_point - sensed_output; // Current error

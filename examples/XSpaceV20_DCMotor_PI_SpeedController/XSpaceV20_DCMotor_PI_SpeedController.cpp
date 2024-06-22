@@ -1,17 +1,17 @@
 /*
 This example demonstrates how to implement a Proportional-Integral (PI) Speed Controller of DC Motor
 
-                                                      DC Motor
-                   SpeedController        +------------------------------+
-                     +----------+         |  +---------+        +-----+  |
-             +       |      Ki  | voltage |  |    b    | speed  |  1  |  |   position
- speed_ref --->o---->| Kp + --- |-------->|--|  -----  |------->| --- |--|-------> 
-               ^ -   |       s  |         |  |  s + a  |        |  s  |  |  |
-               |     +----------+         |  +---------+        +-----+  |  |
-               |         10ms             +------------------------------+  |
-               |                                                            |
-               |                                                            |
-               +------------------------------------------------------------+
+                                                  DC Motor
+                   SpeedController        +----------------------+
+                     +----------+         |  +---------+         |
+             +       |      Ki  | voltage |  |    b    | speed   |   speed
+ speed_ref --->o---->| Kp + --- |-------->|--|  -----  |---------|-------> 
+               ^ -   |       s  |         |  |  s + a  |         |    |
+               |     +----------+         |  +---------+         |    |
+               |         10ms             +----------------------+    |
+               |                                                      |
+               |                                                      |
+               +------------------------------------------------------+
 
 Author: PabloC
 Date: 09/04/2024
@@ -39,9 +39,25 @@ XSController Controller;
 #define ENCODER_RESOLUTION 1280 // Specifies the resolution of the motor encoder
 #define DRV8837_POWER_SUPPLY 5 // Defines the power supply voltage (in volts) for the DRV8837 motor driver
 
+double speed; // Raw speed measurement
+double filtered_speed; // Speed measurement after applying the filter
+
+// Task dedicated to filtering the speed measurement from the motor's encoder
+void SpeedFilter(void *pvParameters) {
+  while (true) {
+    // Measure speed in degrees per second from the encoder
+    speed = XSBoard.GetEncoderSpeed(E1,DEGREES_PER_SECOND);
+    // Apply a second-order low-pass filter to the speed measurement
+    filtered_speed = Filter.SecondOrderLPF(speed, 20, 0.001);
+    // Delay of 1 ms between each measurement cycle
+    vTaskDelay(1);
+  }
+  // Task cleanup, if ever exited
+  vTaskDelete(NULL);
+}
 
 // Task for controlling the motor speed
-void PositionController(void *pvParameters) {
+void SpeedController(void *pvParameters) {
   double voltage;
   // Wake up the DRV8837 motor driver
   XSBoard.DRV8837_Wake();
@@ -73,7 +89,8 @@ void setup() {
   XSBoard.init(PWM_FREQUENCY, ENCODER_RESOLUTION, DRV8837_POWER_SUPPLY);
 
   // Create Real-Time Operating System (RTOS) tasks for motor control
-  xTaskCreate(PositionController, "ControlTask", 2000, NULL, 1, NULL);
+  xTaskCreate(SpeedFilter, "FilterTask", 2000, NULL, 2, NULL);
+  xTaskCreate(SpeedController, "ControlTask", 2000, NULL, 1, NULL);
 }
 
 void loop() {
