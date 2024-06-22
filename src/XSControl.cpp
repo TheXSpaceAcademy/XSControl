@@ -9,6 +9,7 @@
 /************************XSController***************************/
 double XSController::Discrete_Integrator(double input, int aprox_integral, double Ts){
 	double I = 0;
+	double e = input;
 
 	switch (aprox_integral) {
 		case FORWARD_EULER:
@@ -29,9 +30,9 @@ double XSController::Discrete_Integrator(double input, int aprox_integral, doubl
 		default:
 			// In case of an unsupported approximation method
 			break;
-
-		return I;
 	}
+	this->e_1 = e;
+	return I;
 }
 
 
