@@ -1,17 +1,17 @@
 /*
 This example demonstrates how to implement a Proportional-Integral (PI) Speed Controller of DC Motor
 
-                                                  DC Motor
-                   SpeedController        +----------------------+
-                     +----------+         |  +---------+         |
-             +       |      Ki  | voltage |  |    b    | speed   |   speed
- speed_ref --->o---->| Kp + --- |-------->|--|  -----  |---------|-------> 
-               ^ -   |       s  |         |  |  s + a  |         |    |
-               |     +----------+         |  +---------+         |    |
-               |         10ms             +----------------------+    |
-               |                                                      |
-               |                                                      |
-               +------------------------------------------------------+
+                                                  
+                   SpeedController         DC Motor
+                     +----------+         +---------+
+             +       |      Ki  | voltage |    b    |  speed
+ speed_ref --->o---->| Kp + --- |-------->|  -----  |------------> 
+               ^ -   |       s  |         |  s + a  |       |
+               |     +----------+         +---------+       |
+               |         10ms                               |
+               |                                            |
+               |                                            |
+               +--------------------------------------------+
 
 Author: PabloC
 Date: 09/04/2024
